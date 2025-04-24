@@ -98,8 +98,8 @@ class PacketBuffer:
                         if ssh_attempts_by_source[ip_packet.src][ip_packet.dst] >= ssh_brute_force_threshold:
                             ssh_brute_force_sources.add(ip_packet.src)
                             ssh_brute_force_packets += 1
-
-                    syn_counts_by_destination[ip_packet.dst] += 1
+                    else:
+                        syn_counts_by_destination[ip_packet.dst] += 1
 
         # Find destinations receiving many SYNs (potential SYN flood targets)
         potential_syn_flood_targets = {
