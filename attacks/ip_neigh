@@ -1,0 +1,2 @@
+sudo IP neigh show
+sudo IP neigh show | wc -l
