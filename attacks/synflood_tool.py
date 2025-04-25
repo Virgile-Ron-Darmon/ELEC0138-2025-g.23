@@ -70,6 +70,7 @@ def worker(target_ip, target_port, delay, counter, total_packets, spoof_ip):
     except Exception as e:
         print(f"[!] Worker error: {e}")
 
+
 def progress_monitor(counter, total_packets, response_counter=None):
     """Monitor and report progress periodically.
 
