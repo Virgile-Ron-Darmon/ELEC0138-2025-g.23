@@ -1,7 +1,10 @@
+#!/usr/bin/env python3
 """
-Main controller module for the financial data analysis system.
-Orchestrates data loading, processing, model training, and visualization
-components of the application.
+Main controller module for the ELEC0138 network security framework.
+
+Coordinates configuration loading, router setup, packet buffering,
+filter initialization, and policy enforcement to protect against
+network-based threats.
 """
 import logging
 import random
@@ -18,22 +21,27 @@ from src.route_setup.route_setup import RouterSetup
 log = Logger(log_file='SP_Log.log', log_level=logging.DEBUG)
 
 
-class Controller():
-    """
-    Main controller class coordinating all system operations.
+class Controller:
+    """Main controller class coordinating all security system operations.
 
-    Handles configuration loading, database connections, data processing,
-    model training, and visualization generation for the entire system.
+    This class handles:
+        - Configuration loading
+        - Network routing setup
+        - User interaction for filter parameters
+        - Filter initialization and lifecycle management
     """
-    
+
     def load_config(self, file_path):
-        """
-        Loads and validates system configuration from a YAML file.
+        """Load and validate system configuration from a YAML file.
+
+        If the file is missing or contains invalid YAML, a default configuration
+        is created and saved back to the given file path.
 
         Args:
-            file_path (str): Path to the configuration YAML file
+            file_path (str): Path to the configuration YAML file.
 
-        Creates default configuration if file is missing or invalid.
+        Returns:
+            None
         """
         default_config = {
             'test': '1234',
@@ -61,58 +69,68 @@ class Controller():
             log.log("Loading default configuration", logging.INFO)
             config = default_config
 
-        # system variables
+        # Set system variable from config
         self.config_test = config.get('test', '4567')
 
-
-
     def __init__(self):
+        """Initialize the Controller.
+
+        - Load system configuration
+        - Set up network routing
+        - Prepare for filtering and processing
+        """
         log.log("===== Initialising System =====", logging.INFO)
-        # Path to the configuration file
         config_file = './config.yaml'
         self.load_config(config_file)
+
+        # Set up routing manager
         self.route_manager = RouterSetup()
         self.route_manager.setup()
-        #self.filer_1 = Filter(1)
+
+        # Placeholder for packet filter instance
         self.filer = None
-        
-
-
-
-
-
 
     def run(self):
-        """
-        Executes the main system workflow.
+        """Execute the main system workflow.
 
-        Orchestrates the entire process including network filtering,
-        data processing, and analysis components.
+        Prompts the user for:
+          - Queue number selection (1 or 2)
+          - Router pacify option (yes/no)
+
+        Then initializes the packet filter with the chosen parameters
+        and enters the processing loop.
+
+        Returns:
+            None
         """
         log.log("===== Starting System =====", logging.INFO)
 
+        # Prompt for queue number
         while True:
             try:
-                Queue_Num = int(input("Queue Number (1 or 2): "))
-                if Queue_Num == 1 or Queue_Num == 2:
+                queue_num = int(input("Queue Number (1 or 2): "))
+                if queue_num in (1, 2):
                     break
-                else:
-                    print("invalid input")
-            except:
-                print("invalid input")
+                print("Invalid input, please enter 1 or 2.")
+            except ValueError:
+                print("Invalid input, please enter a number.")
+
+        # Prompt for pacify option
         while True:
             try:
-                pacify = str(input("Pacify router ? (y or n): "))
-                if pacify == "y" or pacify == "Y":
-                    pacify = False
+                pacify_input = input("Pacify router? (y/n): ").strip().lower()
+                if pacify_input in ('y', 'n'):
+                    pacify = (pacify_input == 'n')
                     break
-                elif pacify == "n" or pacify == "N":
-                    pacify = True
-                    break
-                else:
-                    print("invalid input")
-            except:
-                print("invalid input")
-        self.filer_2 = Filter(Queue_Num, self.route_manager.return_router_number(), pacify)
-        
+                print("Invalid input, please enter 'y' or 'n'.")
+            except Exception:
+                print("Invalid input, please try again.")
+
+        # Initialize packet filter with user parameters
+        self.filer_2 = Filter(
+            queue_num,
+            self.route_manager.return_router_number(),
+            pacify
+        )
+
         log.log("===== System Terminated =====", logging.INFO)

@@ -9,6 +9,7 @@ import fcntl
 import struct
 import argparse
 
+
 class RouterSetup:
     def __init__(self, script_path_1=None, script_path_2=None):
         """
@@ -95,8 +96,10 @@ class RouterSetup:
         print("Could not detect router number automatically.")
         print("No interface with IP matching pattern 10.x.0.1 (where x is 1-4) found.")
         sys.exit(1)
+
     def return_router_number(self):
         return self.router_number
+
     def verify_script(self):
         """
         Verify the bash script exists and is executable
@@ -151,7 +154,7 @@ class RouterSetup:
             bool: True if successful, False otherwise
         """
         return self.run_bash_script(self.script_path_1)
-    
+
     def edit(self, destination, path):
         """
         Main setup method - runs the bash script with detected router number

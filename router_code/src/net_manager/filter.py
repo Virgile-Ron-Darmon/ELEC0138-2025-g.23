@@ -17,9 +17,10 @@ import subprocess
 from src.net_manager.arp_protection import set_arp_protection_level
 log = Logger(log_file='SP_Log.log', log_level=logging.DEBUG)
 
+
 class Filter():
     def __init__(self, queue_num, router_id, pacify = False):
-        
+
         try:
             # Start the network thread
             self.router_id = router_id
@@ -32,10 +33,10 @@ class Filter():
             self.pacify = pacify
             set_arp_protection_level(1)
             subprocess.run([
-            'sudo', 'ip', 'neigh', 'flush', 'all'
+                'sudo', 'ip', 'neigh', 'flush', 'all'
             ], check=True)
-            
-            #self.coms = Intra_Sys_Com(router_id)
+
+            # self.coms = Intra_Sys_Com(router_id)
             # Create a new NetfilterQueue object
             self.nfqueue = NetfilterQueue()
             # Bind to queue number 1
@@ -52,7 +53,7 @@ class Filter():
             self.time_last_exec = time.time()
             # Run the packet processing loop
             self.nfqueue.run()
-        
+
         except socket.error as e:
             log.log(f"\n[!] Socket error: {e}", logging.ERROR)
             log.log("[!] Are you running as root?", logging.ERROR)
@@ -63,12 +64,12 @@ class Filter():
             try:
                 self.nfqueue.unbind()
             except:
-                pass            
+                pass
 
     # Example: Sending a message
-    def send_example(self, dest, message_txt = ""):
+    def send_example(self, dest, message_txt=""):
         message = message_txt.encode()
-        #message = "Hello, UDP world!".encode()
+        # message = "Hello, UDP world!".encode()
         destination = (dest, 5002) 
         outgoing_messages.put((message, destination))
         log.log(f"Queued message to {destination}", logging.INFO)
@@ -88,32 +89,30 @@ class Filter():
 
         return messages
 
-
-
-
     def print_and_check(self, pkt):
         """
         Callback function that prints packet info and accepts the packet
         to be forwarded through iptables
-        """       
+        """
+
         # Convert the packet payload to a scapy IP packet for easier parsing
         ip_packet = IP(pkt.get_payload())
         if self.pacify:
             flag = ""
             # If TCP or UDP, print port information
             if ip_packet.haslayer('TCP'):
-                tcp_layer = ip_packet['TCP']            # Now you can access TCP properties
+                tcp_layer = ip_packet['TCP'] # Now you can access TCP properties
 
                 # Check for SYN flag
                 if tcp_layer.flags & 0x02:  # 0x02 is the SYN flag
-                    #print("SYN flag is set")
+                    # print("SYN flag is set")
                     flag = "SYN"
-                    
+
             self.packer_buffer.add_packet(ip_packet)
             time_current = time.time()
 
             if time_current - self.time_last_exec > self.period:
-                
+
                 self.time_last_exec = time_current
                 in_messages = self.read_messages()
                 self.rules.clear_rules(time_current)
@@ -125,16 +124,14 @@ class Filter():
                 for out_message in new_rules:
                     dest = "172.16.0."+str(self.router_id)
                     self.send_example(dest, out_message)
-                #self.send_example("src/10.1.0.55/None/5")
-                
-            
+                # self.send_example("src/10.1.0.55/None/5")
+
             # Accept the packet - this puts it back into the iptables flow to be forwarded
             if self.rules.blocking_rules(ip_packet.src, ip_packet.dst, flag):
                 pkt.accept()
-                #log.log("Packet accepted for forwarding", logging.INFO)
+                # log.log("Packet accepted for forwarding", logging.INFO)
             else:
                 pkt.drop()
-                #log.log("Packet rejected for forwarding", logging.INFO)
+                # log.log("Packet rejected for forwarding", logging.INFO)
         else:
             pkt.accept()
-
