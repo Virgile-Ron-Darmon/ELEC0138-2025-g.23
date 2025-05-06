@@ -20,14 +20,12 @@ class Rules():
     def __init__(self):
         self.all_rules = []
         self.past_alert_level = 1
-        
 
     def add_rules(self, new_rules):
-        #for rule in self.all_rules:
+        # for rule in self.all_rules:
         #    log.log(f"===== Removed Rule - {rule.field} {rule.target}", logging.DEBUG)
         #    if time_current - rule.time > rule.ttl:
         #        self.all_rules.remove(rule)
-
 
         for rule in new_rules:
             rule_settings = rule.replace('b', '').replace("'", '')
@@ -36,7 +34,7 @@ class Rules():
 
             if 2 <= rule_settings_len <= 4:
                 new_rule = Rule(rule_settings[0], rule_settings[1])
-                
+
                 if rule_settings_len > 2:
                     if rule_settings[2] == "None":
                         new_rule.flag == None
@@ -46,14 +44,13 @@ class Rules():
                         new_rule.ttl = int(rule_settings[3])
                 self.all_rules.append(new_rule)
                 log.log(f"===== Added Rule - {new_rule.field} {new_rule.target}", logging.DEBUG)
-            
+
             else:
                 log.log(f"Rule Len Invalid: {rule_settings_len} {str(rule_settings)}", logging.WARNING)
-        
 
     def clear_rules(self, time_current):
         for rule in self.all_rules:
-            
+
             if time_current - rule.time > rule.ttl:
                 log.log(f"===== Removed Rule - {rule.field} {rule.target}", logging.DEBUG)
                 self.all_rules.remove(rule)
@@ -63,8 +60,6 @@ class Rules():
             if rule.field == "arp":
                 arp_alert_level += 1
 
-        
-        #print(f"{self.past_alert_level == arp_alert_level}         {self.past_alert_level > 3 and arp_alert_level > 3}")
 
         if self.past_alert_level == arp_alert_level or (self.past_alert_level > 3 and arp_alert_level > 3):
             pass
@@ -76,10 +71,8 @@ class Rules():
             else:
                 log.log(f"===== Arp Protection Level set to - {4}", logging.WARNING)
                 set_arp_protection_level(4)
-        
-        self.past_alert_level = arp_alert_level
 
-    
+        self.past_alert_level = arp_alert_level
 
     def blocking_rules(self, src, dst, flag=""):
         for rule in self.all_rules:
@@ -89,5 +82,5 @@ class Rules():
             elif rule.field == "dst" and dst == rule.target:
                 if rule.flag == "" or flag == rule.flag:
                     return False
-                
+
         return True
